@@ -38,6 +38,9 @@ logs/
 # Claude Code local settings
 .claude/
 
+# Internal documentation
+PRODUCT-DOCUMENTATION.md
+
 # macOS
 .DS_Store
 .AppleDouble
