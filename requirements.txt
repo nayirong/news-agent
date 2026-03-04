@@ -1,8 +1,11 @@
-# Telegram bot framework
+# Core bot framework
 python-telegram-bot==20.7
 
-# Anthropic Claude API (web search requires >= 0.40.0)
+# AI - Claude with web search tool support (requires >=0.40.0)
 anthropic>=0.40.0
+
+# Voice features (optional - requires OPENAI_API_KEY)
+openai>=1.0.0
 
 # Scheduling for daily digests
 apscheduler==3.10.4
@@ -10,14 +13,9 @@ apscheduler==3.10.4
 # Environment variables
 python-dotenv==1.0.0
 
-# Database ORM
+# Database
 sqlalchemy==2.0.25
+psycopg2-binary>=2.9.0
 
 # Data validation
 pydantic==2.6.1
-
-# Voice features — transcription via OpenAI Whisper, TTS replies via OpenAI TTS
-openai>=1.0.0
-
-# PostgreSQL driver — used when DATABASE_URL points to Postgres (e.g. Railway addon)
-psycopg2-binary>=2.9.0
