@@ -16,4 +16,11 @@ COPY . .
 # Ensure runtime directories exist
 RUN mkdir -p logs
 
-CMD ["python", "scripts/run_bot.py"]
+# START_MODE controls which bot(s) to run:
+#   all        — Run both Atlas and Donna in the same process (default, production)
+#   atlas      — Run Atlas (news agent) only
+#   secretary  — Run Donna (calendar secretary) only
+ARG START_MODE=all
+ENV START_MODE=${START_MODE}
+
+CMD ["sh", "-c", "python scripts/run_${START_MODE}.py"]

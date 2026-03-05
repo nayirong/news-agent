@@ -4,6 +4,6 @@ builder = "dockerfile"
 
 [deploy]
 # Run the bot as a long-running worker process (not a web server)
-startCommand = "python scripts/run_bot.py"
+startCommand = "python scripts/run_all.py"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10

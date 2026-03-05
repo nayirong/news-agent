@@ -489,6 +489,30 @@ async def handle_voice_message(
 
 
 # ---------------------------------------------------------------------------
+# App factory (used by run_all.py for multi-bot mode)
+# ---------------------------------------------------------------------------
+
+def build_app() -> Application:
+    """
+    Create and configure the Atlas Application without starting it.
+    Used by run_all.py to run Atlas and Donna in the same process.
+    """
+    app = Application.builder().token(settings.TELEGRAM_BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", cmd_start))
+    app.add_handler(CommandHandler("help", cmd_help))
+    app.add_handler(CommandHandler("digest", cmd_digest))
+    app.add_handler(CommandHandler("interests", cmd_interests))
+    app.add_handler(CommandHandler("settime", cmd_settime))
+    app.add_handler(CommandHandler("digesthere", cmd_digesthere))
+    app.add_handler(CommandHandler("reload", cmd_reload))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message))
+    app.add_handler(MessageHandler(filters.VOICE, handle_voice_message))
+
+    return app
+
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -533,26 +557,7 @@ def main() -> None:
     else:
         logger.info("Voice support: disabled (OPENAI_API_KEY not set)")
 
-    app = Application.builder().token(settings.TELEGRAM_BOT_TOKEN).build()
-
-    # Commands
-    app.add_handler(CommandHandler("start", cmd_start))
-    app.add_handler(CommandHandler("help", cmd_help))
-    app.add_handler(CommandHandler("digest", cmd_digest))
-    app.add_handler(CommandHandler("interests", cmd_interests))
-    app.add_handler(CommandHandler("settime", cmd_settime))
-    app.add_handler(CommandHandler("digesthere", cmd_digesthere))
-    app.add_handler(CommandHandler("reload", cmd_reload))
-
-    # Text messages (not commands)
-    app.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message)
-    )
-
-    # Voice messages
-    app.add_handler(
-        MessageHandler(filters.VOICE, handle_voice_message)
-    )
+    app = build_app()
 
     _scheduler = NewsScheduler(bot=app.bot)
     _scheduler.start()

@@ -5,10 +5,13 @@ load_dotenv()
 
 
 class Settings:
-    # Telegram
+    # Telegram — Atlas (news agent)
     TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
-    # Privacy — comma-separated Telegram user IDs allowed to use this bot.
+    # Telegram — Donna (calendar secretary); second bot token from @BotFather
+    SECRETARY_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN_SECRETARY", "")
+
+    # Privacy — comma-separated Telegram user IDs allowed to use both bots.
     # Leave empty to allow everyone (not recommended for personal bots).
     # Example: ALLOWED_USER_IDS=123456789,987654321
     ALLOWED_USER_IDS: set = {
@@ -19,6 +22,18 @@ class Settings:
 
     # Anthropic
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+
+    # Google Calendar — service account JSON (full JSON string or path to key file)
+    # Setup: Cloud Console → IAM → Service Accounts → Create → Download JSON
+    # Then share your Google Calendar with the service account email address.
+    GOOGLE_SERVICE_ACCOUNT_JSON: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+
+    # Google Calendar — calendar to read/write (your Gmail address, or "primary")
+    GOOGLE_CALENDAR_ID: str = os.getenv("GOOGLE_CALENDAR_ID", "primary")
+
+    # Google Calendar — IANA timezone for event creation
+    # Examples: "Asia/Singapore", "America/New_York", "Europe/London", "UTC"
+    GOOGLE_CALENDAR_TIMEZONE: str = os.getenv("GOOGLE_CALENDAR_TIMEZONE", "UTC")
 
     # OpenAI — required for voice transcription (Whisper) and TTS replies.
     # Voice features are silently disabled if this is not set.
