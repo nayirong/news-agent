@@ -1,0 +1,40 @@
+# Secrets — never bake into image
+.env
+*.env
+
+# Local database and logs
+*.db
+*.sqlite
+*.sqlite3
+logs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Dev / docs
+.git/
+.github/
+.claude/
+.vscode/
+.idea/
+*.md
+!README.md
+
+# macOS
+.DS_Store
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
