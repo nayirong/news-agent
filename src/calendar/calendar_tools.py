@@ -15,6 +15,9 @@ Usage:
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from zoneinfo import ZoneInfo
+
+from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +195,11 @@ class CalendarToolExecutor:
 
     @staticmethod
     def _parse_iso(dt_str: str) -> datetime:
-        """Parse an ISO 8601 datetime string to a timezone-aware datetime (UTC)."""
+        """Parse an ISO 8601 datetime string to a timezone-aware datetime.
+
+        Naive datetimes (no offset) are treated as the user's configured local
+        timezone (GOOGLE_CALENDAR_TIMEZONE), not UTC.
+        """
         dt_str = dt_str.strip()
         # Handle 'Z' suffix
         dt_str = dt_str.replace("Z", "+00:00")
@@ -200,9 +207,10 @@ class CalendarToolExecutor:
             dt = datetime.fromisoformat(dt_str)
         except ValueError:
             # Try without time (date-only)
-            dt = datetime.strptime(dt_str[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            dt = datetime.strptime(dt_str[:10], "%Y-%m-%d")
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
+            local_tz = ZoneInfo(settings.GOOGLE_CALENDAR_TIMEZONE or "UTC")
+            dt = dt.replace(tzinfo=local_tz)
         return dt
 
     @staticmethod

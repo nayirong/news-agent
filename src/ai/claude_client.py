@@ -14,6 +14,7 @@ This module handles the three call types:
     - get_topic_news:     on-demand news for a specific topic
 """
 import logging
+from datetime import date
 from typing import Optional
 
 from anthropic import Anthropic, APIError
@@ -33,29 +34,38 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 DIGEST_USER_PROMPT = """\
+Today's date: {today}
+
 Generate my personalized daily news digest.
 
 My interests: {interests}
 
-For each interest, search the web for the most important news from the last 24 hours.
+For each interest, search the web for the most important news published today ({today}) \
+or yesterday. Only include stories with a publication date of {today} or the day before. \
+Discard any results older than 2 days.
 Find 1-2 significant stories per interest (total: 5-7 stories).
 Follow the Daily Digest Generation skill format defined in your skills.\
 """
 
 FOLLOWUP_USER_PROMPT = """\
+Today's date: {today}
+
 Follow-up question: {question}
 
 Recent conversation context (last few exchanges):
 {recent_context}
 
-Search the web for current information and answer with sources.
+Search the web for current information published today ({today}) or yesterday, and answer with sources.
 Follow the Follow-up Q&A skill format defined in your skills.\
 """
 
 ONDEMAND_USER_PROMPT = """\
+Today's date: {today}
+
 On-demand news request: What is the latest on {topic}?
 
-Search the web for the most recent 2-3 developments on this topic.
+Search the web for the most recent 2-3 developments published today ({today}) or yesterday. \
+Only include stories dated {today} or the day before.
 Follow the On-Demand News Request skill format defined in your skills.\
 """
 
@@ -126,8 +136,9 @@ class ClaudeClient:
             interests_str = ", ".join(user_interests)
             logger.info(f"Generating digest for interests: {interests_str}")
 
+            today = date.today().strftime("%Y-%m-%d")
             response = self._call_claude(
-                messages=[{"role": "user", "content": DIGEST_USER_PROMPT.format(interests=interests_str)}],
+                messages=[{"role": "user", "content": DIGEST_USER_PROMPT.format(interests=interests_str, today=today)}],
                 max_tokens=settings.MAX_TOKENS_DIGEST,
             )
             result = self._extract_text(response)
@@ -171,9 +182,11 @@ class ClaudeClient:
         try:
             logger.info(f"Answering question: {question[:80]}...")
 
+            today = date.today().strftime("%Y-%m-%d")
             user_content = FOLLOWUP_USER_PROMPT.format(
                 question=question,
                 recent_context=recent_context or "(no recent conversation context)",
+                today=today,
             )
             messages = [{"role": "user", "content": user_content}]
             extra_tools = MANAGEMENT_TOOLS if tool_executor else None
@@ -229,8 +242,9 @@ class ClaudeClient:
         try:
             logger.info(f"On-demand news request for: {topic}")
 
+            today = date.today().strftime("%Y-%m-%d")
             response = self._call_claude(
-                messages=[{"role": "user", "content": ONDEMAND_USER_PROMPT.format(topic=topic)}],
+                messages=[{"role": "user", "content": ONDEMAND_USER_PROMPT.format(topic=topic, today=today)}],
                 max_tokens=settings.MAX_TOKENS_ONDEMAND,
             )
             result = self._extract_text(response)

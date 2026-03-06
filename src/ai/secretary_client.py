@@ -32,7 +32,9 @@ SECRETARY_AGENT_NAME = "Calendar Agent"
 TEXT_REQUEST_PROMPT = """\
 {message}
 
-Today's date and time (UTC): {now}
+Today's date and time: {now}
+User's timezone: {timezone}
+When specifying event times for tool calls, use local time in ISO 8601 format without a UTC offset (e.g. 2024-03-15T14:00:00). The system will treat these as {timezone}.
 """
 
 IMAGE_REQUEST_PROMPT = """\
@@ -50,7 +52,9 @@ and ask for confirmation before adding to the calendar.
 
 Additional context from the user: {user_text}
 
-Today's date and time (UTC): {now}
+Today's date and time: {now}
+User's timezone: {timezone}
+When specifying event times for tool calls, use local time in ISO 8601 format without a UTC offset (e.g. 2024-03-15T14:00:00). The system will treat these as {timezone}.
 """
 
 
@@ -133,14 +137,19 @@ class SecretaryClient:
             Donna's response string.
         """
         try:
-            from datetime import datetime, timezone
-            now_str = datetime.now(tz=timezone.utc).strftime("%A, %Y-%m-%d %H:%M UTC")
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+            local_tz_name = settings.GOOGLE_CALENDAR_TIMEZONE or "UTC"
+            local_tz = ZoneInfo(local_tz_name)
+            now_local = datetime.now(tz=local_tz)
+            now_str = now_local.strftime(f"%A, %Y-%m-%d %H:%M {local_tz_name}")
 
             # Build the current user message content
             if image_b64:
                 prompt = IMAGE_REQUEST_PROMPT.format(
                     user_text=text or "(no additional context)",
                     now=now_str,
+                    timezone=local_tz_name,
                 )
                 content = [
                     {
@@ -154,7 +163,7 @@ class SecretaryClient:
                     {"type": "text", "text": prompt},
                 ]
             else:
-                prompt = TEXT_REQUEST_PROMPT.format(message=text, now=now_str)
+                prompt = TEXT_REQUEST_PROMPT.format(message=text, now=now_str, timezone=local_tz_name)
                 content = prompt
 
             # Prepend conversation history so Claude has full context for
